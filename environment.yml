@@ -1,0 +1,25 @@
+name: htamncxip-env
+channels:
+  - defaults
+dependencies:
+  - python=3.10
+  - pip
+  - pip:
+    # --- 核心 GUI 与打包工具 ---
+    - PyQt6
+    - PyQt6-WebEngine
+    - pyinstaller
+    - keyboard
+    
+    # --- 图像处理 ---
+    - opencv-python-headless
+    - Pillow
+    
+    # --- Latex OCR ---
+    - rapid_latex_ocr
+    
+    # --- Paddle 核心 (修正：改为 2.6.2) ---
+    - paddlepaddle==2.6.2 --index-url https://mirror.baidu.com/pypi/simple
+    
+    # --- PaddleOCR ---
+    - paddleocr==2.7.3 --index-url https://mirror.baidu.com/pypi/simple

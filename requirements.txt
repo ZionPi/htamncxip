@@ -1,0 +1,7 @@
+PyQt6
+paddleocr
+rapid_latex_ocr
+numpy
+opencv-python
+Pillow
+keyboard
