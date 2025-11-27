@@ -1,0 +1,117 @@
+name: Build and Release
+
+# 触发机制：当你推送类似 "v1.0.0" 的 tag 时触发
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # 同时构建三个平台
+        os: [windows-latest, ubuntu-latest, macos-latest]
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    # --- 1. Linux 环境特殊处理 ---
+    - name: Install Dependencies (Linux)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt-get update
+        # 安装系统库：libgl1(OpenCV用), libxcb(PyQt6用)
+        sudo apt-get install -y libgl1 libxcb-cursor0 libxcb-xinerama0
+        
+        python -m pip install --upgrade pip
+        # 强制指定百度官方 Linux CPU 源，防止拉取到 GPU 版导致体积爆炸
+        pip install paddlepaddle==2.6.1 -f https://www.paddlepaddle.org.cn/whl/linux/mkl/avx/stable.html
+        pip install paddleocr==2.7.3
+        pip install -r requirements.txt
+        pip install pyinstaller
+
+    # --- 2. Windows 环境特殊处理 ---
+    - name: Install Dependencies (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        python -m pip install --upgrade pip
+        # Windows 上 pip 默认就会装 CPU 版，比较省心
+        pip install paddlepaddle==2.6.1
+        pip install paddleocr==2.7.3
+        pip install -r requirements.txt
+        pip install pyinstaller
+
+    # --- 3. macOS 环境特殊处理 ---
+    - name: Install Dependencies (macOS)
+      if: matrix.os == 'macos-latest'
+      run: |
+        python -m pip install --upgrade pip
+        pip install paddlepaddle==2.6.1
+        pip install paddleocr==2.7.3
+        pip install -r requirements.txt
+        pip install pyinstaller
+
+    # --- 4. 开始打包 ---
+    - name: Build with PyInstaller
+      run: |
+        pyinstaller build.spec
+
+    # --- 5. 处理产物并上传 ---
+
+    # Windows: 上传 .exe
+    - name: Upload Windows Artifact
+      if: matrix.os == 'windows-latest'
+      uses: softprops/action-gh-release@v1
+      with:
+        files: dist/htamncxip.exe
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    # Linux: 打包成 tar.gz 并上传
+    - name: Upload Linux Artifact
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        cd dist
+        tar -czvf htamncxip-linux.tar.gz htamncxip
+    - name: Release Linux
+      if: matrix.os == 'ubuntu-latest'
+      uses: softprops/action-gh-release@v1
+      with:
+        files: dist/htamncxip-linux.tar.gz
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    # macOS: 生成 DMG 并上传
+    - name: Package macOS DMG
+      if: matrix.os == 'macos-latest'
+      run: |
+        # 安装 create-dmg 工具
+        brew install create-dmg
+        cd dist
+        # 自动生成 .dmg
+        create-dmg \
+          --volname "Htamncxip Installer" \
+          --window-pos 200 120 \
+          --window-size 800 400 \
+          "htamncxip.dmg" \
+          "htamncxip.app"
+    - name: Release macOS
+      if: matrix.os == 'macos-latest'
+      uses: softprops/action-gh-release@v1
+      with:
+        files: dist/htamncxip.dmg
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
