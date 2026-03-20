@@ -1,0 +1,38 @@
+common:
+  drop_path_rate: 0.0
+dataset:
+  eval:
+    datasets: []
+    name: formula_rec_eval
+  train:
+    datasets: []
+    name: formula_rec_train
+model:
+  arch: unimernet
+  load_pretrained: true
+  model_config:
+    max_seq_len: 1024
+    model_name: /home/zp/Development/htamncxip/backend/weights/UniMERNet
+  model_type: unimernet
+  pretrained: /home/zp/Development/htamncxip/backend/weights/UniMERNet/pytorch_model.bin
+  tokenizer_config:
+    path: /home/zp/Development/htamncxip/backend/weights/UniMERNet
+run_cfg:
+  batch_size_eval: 1
+  ctc_vocab_path: /home/zp/Development/htamncxip/backend/weights/UniMERNet/tokenizer.json
+  distributed: false
+  evaluate:
+    eval_list: []
+    metric: acc
+  generate_cfg:
+    max_new_tokens: 1024
+    min_new_tokens: 1
+    num_beams: 1
+    repetition_penalty: 1.0
+    temperature: 0.0
+    top_p: 1.0
+  predict: {}
+  runner: runner_iter
+  seed: 42
+  task: unimernet_train
+  train: {}

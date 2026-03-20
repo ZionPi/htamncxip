@@ -1,0 +1,25 @@
+# Web Framework
+fastapi
+uvicorn
+python-multipart
+requests
+
+# Image Processing
+opencv-python-headless
+pillow
+numpy<2.0.0  # Paddle 目前对 numpy 2.0 兼容性不好，锁定版本
+
+# PaddleOCR
+# 注意：paddlepaddle-gpu 我们在安装命令里单独指定，这里只写 paddleocr
+paddleocr>=2.7.0
+shapely
+scikit-image
+imgaug
+pyclipper
+lmdb
+
+# UniMERNet Dependencies (Transformers & Vision)
+transformers>=4.30.0
+timm
+einops
+accelerate
